@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
-
 public class WeaponController : MonoBehaviour
 {
     [Header("References")]
@@ -12,6 +11,7 @@ public class WeaponController : MonoBehaviour
     [Header("General")]
     public LayerMask hittableLayers;
     public GameObject bulletHolePrefab;
+    public GameObject customImpactPrefab; // Nuevo prefab seleccionable desde el inspector
 
     [Header("Shoot Parameters")]
     public float fireRange = 200;
@@ -33,36 +33,36 @@ public class WeaponController : MonoBehaviour
     }
 
     private bool isAKActive = false;
-private bool isAwpActive = false;
+    private bool isAwpActive = false;
 
-private void Update()
-{
-    HandleShoot();
-
-    // Restaura la posición original utilizando Lerp
-    transform.localPosition = Vector3.Lerp(transform.localPosition, originalPosition, Time.deltaTime * 5f);
-
-    if (Input.GetKeyDown(KeyCode.Alpha1) && !isAKActive) // Verifica si AK no está activo para evitar repeticiones
+    private void Update()
     {
-        isAKActive = true;
-        isAwpActive = false;
+        HandleShoot();
 
-        akON.gameObject.SetActive(true);
-        awpOFF.gameObject.SetActive(true);
-        akOFF.gameObject.SetActive(false);
-        awpON.gameObject.SetActive(false);
-    }
-    else if (Input.GetKeyDown(KeyCode.Alpha2) && !isAwpActive) // Verifica si AWP no está activo para evitar repeticiones
-    {
-        isAKActive = false;
-        isAwpActive = true;
+        // Restaura la posición original utilizando Lerp
+        transform.localPosition = Vector3.Lerp(transform.localPosition, originalPosition, Time.deltaTime * 5f);
 
-        akON.gameObject.SetActive(false);
-        awpOFF.gameObject.SetActive(false);
-        akOFF.gameObject.SetActive(true);
-        awpON.gameObject.SetActive(true);
+        if (Input.GetKeyDown(KeyCode.Alpha1) && !isAKActive) // Verifica si AK no está activo para evitar repeticiones
+        {
+            isAKActive = true;
+            isAwpActive = false;
+
+            akON.gameObject.SetActive(true);
+            awpOFF.gameObject.SetActive(true);
+            akOFF.gameObject.SetActive(false);
+            awpON.gameObject.SetActive(false);
+        }
+        else if (Input.GetKeyDown(KeyCode.Alpha2) && !isAwpActive) // Verifica si AWP no está activo para evitar repeticiones
+        {
+            isAKActive = false;
+            isAwpActive = true;
+
+            akON.gameObject.SetActive(false);
+            awpOFF.gameObject.SetActive(false);
+            akOFF.gameObject.SetActive(true);
+            awpON.gameObject.SetActive(true);
+        }
     }
-}
 
     private void HandleShoot()
     {
@@ -73,35 +73,40 @@ private void Update()
         }
     }
 
-private void Shoot()
-{
-    GameObject flashClone = Instantiate(flashEffect, weaponMuzzle.position, Quaternion.Euler(weaponMuzzle.forward), transform);
-    Destroy(flashClone, 1f);
-
-    AddRecoil();
-
-    // Lanzamos un Raycast para el efecto visual del agujero de bala
-    RaycastHit hit;
-    if (Physics.Raycast(cameraPlayerTransform.position, cameraPlayerTransform.forward, out hit, fireRange, hittableLayers))
+    private void Shoot()
     {
-        GameObject bulletHoleClone = Instantiate(bulletHolePrefab, hit.point + hit.normal * 0.001f, Quaternion.LookRotation(hit.normal));
-        Destroy(bulletHoleClone, 4f);
+        GameObject flashClone = Instantiate(flashEffect, weaponMuzzle.position, Quaternion.Euler(weaponMuzzle.forward), transform);
+        Destroy(flashClone, 1f);
 
-        // Si el objeto golpeado tiene el componente Health, le hacemos daño
-        Health health = hit.collider.GetComponent<Health>();
-        if (health != null)
+        AddRecoil();
+
+        // Lanzamos un Raycast para el efecto visual del agujero de bala
+        RaycastHit hit;
+        if (Physics.Raycast(cameraPlayerTransform.position, cameraPlayerTransform.forward, out hit, fireRange, hittableLayers))
         {
-            Bullet bulletScript = GetComponent<Bullet>();
-            if (bulletScript != null)
+            GameObject impactPrefab = bulletHolePrefab; // El prefab por defecto es el bulletHolePrefab
+            if (hit.collider.GetComponent<Health>() != null && customImpactPrefab != null) // Si el objeto golpeado tiene el componente Health y el prefab personalizado está asignado
             {
-                health.TakeDamage(bulletScript.bulletDamage);
+                impactPrefab = customImpactPrefab; // Usamos el prefab personalizado en lugar del bulletHolePrefab
+            }
+
+            GameObject bulletHoleClone = Instantiate(impactPrefab, hit.point + hit.normal * 0.001f, Quaternion.LookRotation(hit.normal));
+            Destroy(bulletHoleClone, 4f);
+
+            // Si el objeto golpeado tiene el componente Health, le hacemos daño
+            Health health = hit.collider.GetComponent<Health>();
+            if (health != null)
+            {
+                Bullet bulletScript = GetComponent<Bullet>();
+                if (bulletScript != null)
+                {
+                    health.TakeDamage(bulletScript.bulletDamage);
+                }
             }
         }
+
+        StartCoroutine(ShootCooldown());
     }
-
-    StartCoroutine(ShootCooldown());
-}
-
 
     private void AddRecoil()
     {
