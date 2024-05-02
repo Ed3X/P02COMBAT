@@ -73,22 +73,35 @@ private void Update()
         }
     }
 
-    private void Shoot()
+private void Shoot()
+{
+    GameObject flashClone = Instantiate(flashEffect, weaponMuzzle.position, Quaternion.Euler(weaponMuzzle.forward), transform);
+    Destroy(flashClone, 1f);
+
+    AddRecoil();
+
+    // Lanzamos un Raycast para el efecto visual del agujero de bala
+    RaycastHit hit;
+    if (Physics.Raycast(cameraPlayerTransform.position, cameraPlayerTransform.forward, out hit, fireRange, hittableLayers))
     {
-        GameObject flashClone = Instantiate(flashEffect, weaponMuzzle.position, Quaternion.Euler(weaponMuzzle.forward), transform);
-        Destroy(flashClone, 1f);
+        GameObject bulletHoleClone = Instantiate(bulletHolePrefab, hit.point + hit.normal * 0.001f, Quaternion.LookRotation(hit.normal));
+        Destroy(bulletHoleClone, 4f);
 
-        AddRecoil();
-
-        RaycastHit hit;
-        if (Physics.Raycast(cameraPlayerTransform.position, cameraPlayerTransform.forward, out hit, fireRange, hittableLayers))
+        // Si el objeto golpeado tiene el componente Health, le hacemos daño
+        Health health = hit.collider.GetComponent<Health>();
+        if (health != null)
         {
-            GameObject bulletHoleClone = Instantiate(bulletHolePrefab, hit.point + hit.normal * 0.001f, Quaternion.LookRotation(hit.normal));
-            Destroy(bulletHoleClone, 4f);
+            Bullet bulletScript = GetComponent<Bullet>();
+            if (bulletScript != null)
+            {
+                health.TakeDamage(bulletScript.bulletDamage);
+            }
         }
-
-        StartCoroutine(ShootCooldown());
     }
+
+    StartCoroutine(ShootCooldown());
+}
+
 
     private void AddRecoil()
     {
@@ -108,6 +121,5 @@ private void Update()
     public RawImage awpOFF;
     public RawImage awpON;
 
-
-
+    public GameObject bulletPrefab;
 }
