@@ -3615,7 +3615,6 @@ GameObject:
   m_Component:
   - component: {fileID: 963194228}
   - component: {fileID: 963194227}
-  - component: {fileID: 963194226}
   m_Layer: 0
   m_Name: PlayerCamera
   m_TagString: MainCamera
@@ -3623,14 +3622,6 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!81 &963194226
-AudioListener:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 963194225}
-  m_Enabled: 1
 --- !u!20 &963194227
 Camera:
   m_ObjectHideFlags: 0
@@ -4393,6 +4384,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 31a588e1361bc2a4e931fe9e2a5f6d84, type: 3}
       insertIndex: -1
       addedObject: {fileID: 1509472278}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 31a588e1361bc2a4e931fe9e2a5f6d84, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1509472279}
     - targetCorrespondingSourceObject: {fileID: 1467203862203779813, guid: 31a588e1361bc2a4e931fe9e2a5f6d84, type: 3}
       insertIndex: -1
       addedObject: {fileID: 639546927}
@@ -4538,7 +4532,6 @@ GameObject:
   m_Component:
   - component: {fileID: 1378007218}
   - component: {fileID: 1378007220}
-  - component: {fileID: 1378007219}
   m_Layer: 0
   m_Name: WeaponCamara
   m_TagString: Untagged
@@ -4561,14 +4554,6 @@ Transform:
   m_Father: {fileID: 963194228}
   m_RootOrder: -1
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!81 &1378007219
-AudioListener:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1378007217}
-  m_Enabled: 1
 --- !u!20 &1378007220
 Camera:
   m_ObjectHideFlags: 0
@@ -5036,6 +5021,14 @@ MonoBehaviour:
   runSpeed: 3.5
   rotationSensibility: 400
   jumpHeight: 1
+--- !u!81 &1509472279
+AudioListener:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1509472272}
+  m_Enabled: 1
 --- !u!1 &1523160488 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: -2874765826992384646, guid: 05146ed2bcaeb6447a9bb2aaecfd6d02, type: 3}
