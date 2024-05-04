@@ -30,7 +30,6 @@ public class EnemyMove : MonoBehaviour
     {
         if (Vector3.Distance(transform.position, target.transform.position) > radio_vision)
         {
-            agente.enabled = false;
             ani.SetBool("run", false);
             cronometro += 1 * Time.deltaTime;
             if (cronometro >= 4)
@@ -52,32 +51,42 @@ public class EnemyMove : MonoBehaviour
 
                 case 2:
                     transform.rotation = Quaternion.RotateTowards(transform.rotation, angulo, 0.5f);
-                    transform.Translate(Vector3.forward * 0.5f * Time.deltaTime);
+                    transform.Translate(Vector3.forward * speed * Time.deltaTime);
                     ani.SetBool("walk", true);
+                    ani.SetBool("run", false);
+                    ani.SetBool("attack", false);
                     break;
             }
         }
         else
         {
-                var lookPos = target.transform.position - transform.position;
-                lookPos.y = 0;
-                var rotation = Quaternion.LookRotation(lookPos);
+            var lookPos = target.transform.position - transform.position;
+            lookPos.y = 0;
+            var rotation = Quaternion.LookRotation(lookPos);
 
             agente.enabled = true;
             agente.SetDestination(target.transform.position);
 
-            if (Vector3.Distance(tranform.position, target.transform.position) > distancia_ataque && !atacando)
+            if (Vector3.Distance(transform.position, target.transform.position) > distancia_ataque && !atacando)
             {
+                transform.rotation = Quaternion.RotateTowards(transform.rotation, rotation, 2);
                 ani.SetBool("walk", false);
+
                 ani.SetBool("run", true);
+                transform.Translate(Vector3.forward * 1 * Time.deltaTime);
+
+                ani.SetBool("attack", false);
             }
             else
             {
                 if (!atacando)
                 {
-                    transform.rotation = Quaternion.RotateTowards(transform.rotation, rotation, 1);
+                    transform.rotation = Quaternion.RotateTowards(transform.rotation, rotation, 2);
                     ani.SetBool("walk", false);
                     ani.SetBool("run", false);
+
+                    ani.SetBool("attack", true);
+                    atacando = true;
                 }
             }
 
@@ -91,7 +100,8 @@ public class EnemyMove : MonoBehaviour
 
     public void Final_Ani()
     {
-        if (Vector3.Distance(transform.position, target.transform.position > distancia_ataque + 0.2f){
+        if (Vector3.Distance(transform.position, target.transform.position) > distancia_ataque + 0.2f)
+        {
             ani.SetBool("attack", false);
         }
         

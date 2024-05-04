@@ -5124,6 +5124,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: e9b07117d958c504f8241c2bc3e28833, type: 3}
       insertIndex: -1
       addedObject: {fileID: 1433877639}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: e9b07117d958c504f8241c2bc3e28833, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1433877645}
   m_SourcePrefab: {fileID: 100100000, guid: e9b07117d958c504f8241c2bc3e28833, type: 3}
 --- !u!1 &1282692074 stripped
 GameObject:
@@ -5329,6 +5332,10 @@ PrefabInstance:
     - target: {fileID: 919132149155446097, guid: 31a588e1361bc2a4e931fe9e2a5f6d84, type: 3}
       propertyPath: m_Name
       value: Player
+      objectReference: {fileID: 0}
+    - target: {fileID: 919132149155446097, guid: 31a588e1361bc2a4e931fe9e2a5f6d84, type: 3}
+      propertyPath: m_IsActive
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 919132149155446097, guid: 31a588e1361bc2a4e931fe9e2a5f6d84, type: 3}
       propertyPath: m_TagString
@@ -5731,7 +5738,7 @@ BoxCollider:
   m_ProvidesContacts: 1
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: -0.8, y: 2, z: 0.6}
+  m_Size: {x: 0.8, y: 2, z: 0.6}
   m_Center: {x: 0, y: 1, z: 0}
 --- !u!195 &1433877641
 NavMeshAgent:
@@ -5743,11 +5750,11 @@ NavMeshAgent:
   m_Enabled: 1
   m_AgentTypeID: 0
   m_Radius: 0.38
-  m_Speed: 5
+  m_Speed: 3
   m_Acceleration: 2
   avoidancePriority: 50
   m_AngularSpeed: 120
-  m_StoppingDistance: 0
+  m_StoppingDistance: 3
   m_AutoTraverseOffMeshLink: 1
   m_AutoBraking: 1
   m_AutoRepath: 1
@@ -5772,13 +5779,44 @@ MonoBehaviour:
   ani: {fileID: 1433877643}
   angulo: {x: 0, y: 0, z: 0, w: 0}
   grado: 0
-  target: {fileID: 1509472272}
+  target: {fileID: 0}
   atacando: 0
+  agente: {fileID: 1433877641}
+  distancia_ataque: 4
+  radio_vision: 7
+  speed: 0.5
 --- !u!95 &1433877643 stripped
 Animator:
   m_CorrespondingSourceObject: {fileID: 5866666021909216657, guid: e9b07117d958c504f8241c2bc3e28833, type: 3}
   m_PrefabInstance: {fileID: 1273191923}
   m_PrefabAsset: {fileID: 0}
+--- !u!54 &1433877645
+Rigidbody:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1433877638}
+  serializedVersion: 4
+  m_Mass: 100
+  m_Drag: 100
+  m_AngularDrag: 0.05
+  m_CenterOfMass: {x: 0, y: 0, z: 0}
+  m_InertiaTensor: {x: 1, y: 1, z: 1}
+  m_InertiaRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ImplicitCom: 1
+  m_ImplicitTensor: 0
+  m_UseGravity: 0
+  m_IsKinematic: 0
+  m_Interpolate: 0
+  m_Constraints: 112
+  m_CollisionDetection: 2
 --- !u!1 &1467246464 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: -7146521406498821007, guid: 05146ed2bcaeb6447a9bb2aaecfd6d02, type: 3}
@@ -6178,7 +6216,7 @@ CharacterController:
   m_Height: 177.6
   m_Radius: 20.8
   m_SlopeLimit: 40
-  m_StepOffset: 0.5
+  m_StepOffset: 0.3
   m_SkinWidth: 0.08
   m_MinMoveDistance: 0.001
   m_Center: {x: 0, y: 87.7, z: 0}
