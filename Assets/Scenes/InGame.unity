@@ -6543,8 +6543,10 @@ MonoBehaviour:
   gravityScale: -20
   walkSpeed: 2
   runSpeed: 3.5
-  rotationSensibility: 400
+  speedMultiplierPerJump: 1.25
+  rotationSensibility: 100
   jumpHeight: 1
+  jumpCooldown: 0.1
 --- !u!81 &1509472279
 AudioListener:
   m_ObjectHideFlags: 0

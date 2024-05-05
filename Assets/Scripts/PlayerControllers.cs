@@ -14,14 +14,20 @@ public class PlayerController : MonoBehaviour
     [Header("Movement")]
     public float walkSpeed = 5f;
     public float runSpeed = 10f;
+    public float speedMultiplierPerJump = 1.1f; // Factor de multiplicación de velocidad por salto
 
     [Header("Rotation")]
     public float rotationSensibility = 100f;
 
     [Header("Jump")]
     public float jumpHeight = 1.9f;
+    public float jumpCooldown = 0.1f; // Tiempo de cooldown entre saltos
 
     private float cameraVerticalAngle;
+    private float lastJumpTime; // Tiempo del último salto
+    private int consecutiveJumps = 0;
+    private float currentWalkSpeed;
+    private float currentRunSpeed;
     Vector3 moveInput = Vector3.zero;
     Vector3 rotationinput = Vector3.zero;
     CharacterController characterController;
@@ -29,6 +35,8 @@ public class PlayerController : MonoBehaviour
     private void Awake()
     {
         characterController = GetComponent<CharacterController>();
+        currentWalkSpeed = walkSpeed;
+        currentRunSpeed = runSpeed;
     }
 
     private void Update()
@@ -46,16 +54,28 @@ public class PlayerController : MonoBehaviour
 
             if (Input.GetButton("Sprint"))
             {
-                moveInput = transform.TransformDirection(moveInput) * runSpeed;
+                moveInput = transform.TransformDirection(moveInput) * currentRunSpeed;
             }
             else
             {
-                moveInput = transform.TransformDirection(moveInput) * walkSpeed;
+                moveInput = transform.TransformDirection(moveInput) * currentWalkSpeed;
             }
             
-            if (Input.GetButtonDown("Jump"))
+            if (Input.GetButton("Jump") && Time.time > lastJumpTime + jumpCooldown)
             {
                 moveInput.y = Mathf.Sqrt(jumpHeight * -2f * gravityScale);
+                lastJumpTime = Time.time;
+                consecutiveJumps++;
+                // Multiplica las velocidades por el factor de multiplicación
+                currentWalkSpeed *= speedMultiplierPerJump;
+                currentRunSpeed *= speedMultiplierPerJump;
+            }
+            else
+            {
+                consecutiveJumps = 0;
+                // Reinicia las velocidades actuales a las velocidades iniciales
+                currentWalkSpeed = walkSpeed;
+                currentRunSpeed = runSpeed;
             }
         }
 
@@ -72,6 +92,6 @@ public class PlayerController : MonoBehaviour
         cameraVerticalAngle = Mathf.Clamp(cameraVerticalAngle, -70, 70);
 
         transform.Rotate(Vector3.up * rotationinput.x);
-        playerCamera.transform.localRotation = Quaternion.Euler(-cameraVerticalAngle,0f,0f);
+        playerCamera.transform.localRotation = Quaternion.Euler(-cameraVerticalAngle, 0f, 0f);
     }
 }
