@@ -1,115 +1,80 @@
 using System.Collections;
 using System.Collections.Generic;
+using UnityEditor;
 using UnityEngine;
 using UnityEngine.AI;
 
 public class EnemyMove : MonoBehaviour
 {
-    public int rutina;
-    public float cronometro;
-    public Animator ani;
-    public Quaternion angulo;
-    public float grado;
+    public Transform[] waypoints; // Array de waypoints
+    private int currentWaypointIndex = 0; // Índice del waypoint actual
 
+    public Animator ani;
+    public NavMeshAgent agent;
+    public float distancia_ataque;
     public GameObject target;
     public bool atacando;
-
-    public NavMeshAgent agente;
-    public float distancia_ataque;
     public float radio_vision;
-
-    public float speed;
 
     void Start()
     {
         ani = GetComponent<Animator>();
-        target = GameObject.Find("Player");
-    }
+        agent = GetComponent<NavMeshAgent>();
+        agent.enabled = true;
 
-    public void Comportamiento_Enemigo()
-    {
-        if (Vector3.Distance(transform.position, target.transform.position) > radio_vision)
-        {
-            ani.SetBool("run", false);
-            cronometro += 1 * Time.deltaTime;
-            if (cronometro >= 4)
-            {
-                rutina = Random.Range(0, 2);
-                cronometro = 0;
-            }
-            switch (rutina)
-            {
-                case 0:
-                    ani.SetBool("walk", false);
-                    break;
-
-                case 1:
-                    grado = Random.Range(0, 360);
-                    angulo = Quaternion.Euler(0, grado, 0);
-                    rutina++;
-                    break;
-
-                case 2:
-                    transform.rotation = Quaternion.RotateTowards(transform.rotation, angulo, 0.5f);
-                    transform.Translate(Vector3.forward * speed * Time.deltaTime);
-                    ani.SetBool("walk", true);
-                    ani.SetBool("run", false);
-                    ani.SetBool("attack", false);
-                    break;
-            }
-        }
-        else
-        {
-            var lookPos = target.transform.position - transform.position;
-            lookPos.y = 0;
-            var rotation = Quaternion.LookRotation(lookPos);
-
-            agente.enabled = true;
-            agente.SetDestination(target.transform.position);
-
-            if (Vector3.Distance(transform.position, target.transform.position) > distancia_ataque && !atacando)
-            {
-                transform.rotation = Quaternion.RotateTowards(transform.rotation, rotation, 2);
-                ani.SetBool("walk", false);
-
-                ani.SetBool("run", true);
-                transform.Translate(Vector3.forward * 1 * Time.deltaTime);
-
-                ani.SetBool("attack", false);
-            }
-            else
-            {
-                if (!atacando)
-                {
-                    transform.rotation = Quaternion.RotateTowards(transform.rotation, rotation, 2);
-                    ani.SetBool("walk", false);
-                    ani.SetBool("run", false);
-
-                    ani.SetBool("attack", true);
-                    atacando = true;
-                }
-            }
-
-        }
-
-        if(atacando)
-        {
-            agente.enabled = false;
-        }
-    }
-
-    public void Final_Ani()
-    {
-        if (Vector3.Distance(transform.position, target.transform.position) > distancia_ataque + 0.2f)
-        {
-            ani.SetBool("attack", false);
-        }
-        
-        atacando = false;
+        // Establecer el primer waypoint como destino inicial
+        SetNextWaypoint();
     }
 
     void Update()
     {
-        Comportamiento_Enemigo();
+        // Si estamos cerca del waypoint actual, avanzar al siguiente
+        if (agent.remainingDistance <= agent.stoppingDistance && !atacando)
+        {
+            SetNextWaypoint();
+        }
+
+        if (Vector3.Distance(transform.position, target.transform.position) < radio_vision && !atacando)
+        {
+            var lookPos = target.transform.position - transform.position;
+            lookPos.y = 0;
+            Quaternion rotation = Quaternion.LookRotation(lookPos);
+            agent.enabled = true;
+            transform.rotation = Quaternion.RotateTowards(transform.rotation, rotation, 200);
+            transform.Translate(Vector3.forward * 1f * Time.deltaTime);
+            atacando = false;
+            ani.SetBool("attack", false);
+            ani.SetBool("walk", false);
+            ani.SetBool("run", true);
+        }
+
+        // Si estamos dentro del rango de ataque y no estamos atacando, atacar
+        if (Vector3.Distance(transform.position, target.transform.position) < distancia_ataque)
+        {
+            var lookPos = target.transform.position - transform.position;
+            lookPos.y = 0;
+            Quaternion rotation = Quaternion.LookRotation(lookPos);
+            transform.rotation = Quaternion.RotateTowards(transform.rotation, rotation, 200);
+            atacando = true;
+            ani.SetBool("attack", true);
+            ani.SetBool("walk", false);
+            ani.SetBool("run", false);
+            
+        }
+        else
+        {
+            agent.enabled = true;
+            atacando = false;
+            ani.SetBool("attack", false);
+        }
+    }
+
+    void SetNextWaypoint()
+    {
+        ani.SetBool("walk", true);
+        // Incrementar el índice del waypoint actual
+        currentWaypointIndex = (currentWaypointIndex + 1) % waypoints.Length;
+        // Establecer el siguiente waypoint como destino
+        agent.SetDestination(waypoints[currentWaypointIndex].position);
     }
 }
