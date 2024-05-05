@@ -1,80 +1,94 @@
-using System.Collections;
-using System.Collections.Generic;
-using UnityEditor;
 using UnityEngine;
 using UnityEngine.AI;
 
 public class EnemyMove : MonoBehaviour
 {
     public Transform[] waypoints; // Array de waypoints
-    private int currentWaypointIndex = 0; // Índice del waypoint actual
-
-    public Animator ani;
-    public NavMeshAgent agent;
+    private Transform currentWaypoint; // Waypoint actual
+    private Animator ani;
+    private NavMeshAgent agent;
     public float distancia_ataque;
     public GameObject target;
-    public bool atacando;
     public float radio_vision;
+    public float velocidad_patrulla = 0.5f;
+    public float velocidad_run = 1f;
+    private bool isPatrolling = true;
 
     void Start()
     {
         ani = GetComponent<Animator>();
         agent = GetComponent<NavMeshAgent>();
         agent.enabled = true;
-
-        // Establecer el primer waypoint como destino inicial
-        SetNextWaypoint();
+        currentWaypoint = GetRandomWaypoint();
+        SetDestination(currentWaypoint.position);
     }
 
     void Update()
     {
-        // Si estamos cerca del waypoint actual, avanzar al siguiente
-        if (agent.remainingDistance <= agent.stoppingDistance && !atacando)
+        // Si el jugador está dentro del rango de visión
+        if (Vector3.Distance(transform.position, target.transform.position) < radio_vision)
         {
-            SetNextWaypoint();
-        }
+            // Detener la patrulla
+            isPatrolling = false;
 
-        if (Vector3.Distance(transform.position, target.transform.position) < radio_vision && !atacando)
-        {
-            var lookPos = target.transform.position - transform.position;
-            lookPos.y = 0;
+            // Girar hacia el jugador
+            Vector3 lookPos = target.transform.position - transform.position;
+            lookPos.y = 0f;
             Quaternion rotation = Quaternion.LookRotation(lookPos);
-            agent.enabled = true;
-            transform.rotation = Quaternion.RotateTowards(transform.rotation, rotation, 200);
-            transform.Translate(Vector3.forward * 1f * Time.deltaTime);
-            atacando = false;
-            ani.SetBool("attack", false);
-            ani.SetBool("walk", false);
-            ani.SetBool("run", true);
-        }
+            transform.rotation = Quaternion.RotateTowards(transform.rotation, rotation, 200f * Time.deltaTime);
 
-        // Si estamos dentro del rango de ataque y no estamos atacando, atacar
-        if (Vector3.Distance(transform.position, target.transform.position) < distancia_ataque)
-        {
-            var lookPos = target.transform.position - transform.position;
-            lookPos.y = 0;
-            Quaternion rotation = Quaternion.LookRotation(lookPos);
-            transform.rotation = Quaternion.RotateTowards(transform.rotation, rotation, 200);
-            atacando = true;
-            ani.SetBool("attack", true);
-            ani.SetBool("walk", false);
-            ani.SetBool("run", false);
-            
+            // Si el jugador está dentro del rango de ataque
+            if (Vector3.Distance(transform.position, target.transform.position) < distancia_ataque)
+            {
+                // Disparar al jugador
+                ani.SetBool("attack", true);
+                ani.SetBool("run", false);
+                ani.SetBool("walk", false);
+            }
+            else
+            {
+                // Moverse hacia el jugador
+                ani.SetBool("run", true);
+                ani.SetBool("walk", false);
+                ani.SetBool("attack", false);
+                SetDestination(target.transform.position);
+                agent.speed = velocidad_run;
+            }
         }
         else
         {
-            agent.enabled = true;
-            atacando = false;
+            // Si el jugador está fuera del rango de visión, continuar patrullando
+            isPatrolling = true;
+            agent.speed = velocidad_patrulla;
+        }
+
+        if (isPatrolling)
+        {
+            // Si está patrullando, continuar con la patrulla
+            ani.SetBool("walk", true);
+            ani.SetBool("run", false);
             ani.SetBool("attack", false);
+
+            if (ReachedWaypoint())
+            {
+                currentWaypoint = GetRandomWaypoint();
+                SetDestination(currentWaypoint.position);
+            }
         }
     }
 
-    void SetNextWaypoint()
+    private bool ReachedWaypoint()
     {
-        ani.SetBool("walk", true);
-        // Incrementar el índice del waypoint actual
-        currentWaypointIndex = (currentWaypointIndex + 1) % waypoints.Length;
-        // Establecer el siguiente waypoint como destino
-        agent.SetDestination(waypoints[currentWaypointIndex].position);
+        return Vector3.Distance(transform.position, currentWaypoint.position) <= agent.stoppingDistance;
+    }
+
+    private Transform GetRandomWaypoint()
+    {
+        return waypoints[Random.Range(0, waypoints.Length)];
+    }
+
+    private void SetDestination(Vector3 destination)
+    {
+        agent.SetDestination(destination);
     }
 }
