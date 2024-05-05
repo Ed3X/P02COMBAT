@@ -14,6 +14,14 @@ public class EnemyMove : MonoBehaviour
     public float velocidad_run = 1f;
     private bool isPatrolling = true;
 
+    // Variables para el disparo
+    public float shootRate = 1f; // Frecuencia de disparo en segundos
+    private float nextShootTime = 1f; // Momento en el que se podrá disparar nuevamente
+    public float shootRange = 10f; // Rango máximo de disparo
+    public GameObject bulletPrefab; // Prefab de la bala
+    public Transform firePoint; // Punto de origen del disparo
+    public float bulletSpeed = 10f; // Velocidad de la bala
+
     void Start()
     {
         ani = GetComponent<Animator>();
@@ -25,6 +33,9 @@ public class EnemyMove : MonoBehaviour
 
     void Update()
     {
+        Vector3 targetPosition = target.transform.position + Vector3.up * 0.8f; // Ajustar la altura del objetivo
+        Vector3 direction = (targetPosition - firePoint.position).normalized;
+
         // Si el jugador está dentro del rango de visión
         if (Vector3.Distance(transform.position, target.transform.position) < radio_vision)
         {
@@ -44,6 +55,11 @@ public class EnemyMove : MonoBehaviour
                 ani.SetBool("attack", true);
                 ani.SetBool("run", false);
                 ani.SetBool("walk", false);
+                if (Time.time > nextShootTime)
+                {
+                    Shoot(direction);
+                    nextShootTime = Time.time + 2f / shootRate; // Calculamos el próximo momento de disparo
+                }
             }
             else
             {
@@ -90,5 +106,17 @@ public class EnemyMove : MonoBehaviour
     private void SetDestination(Vector3 destination)
     {
         agent.SetDestination(destination);
+    }
+
+    private void Shoot(Vector3 direction)
+    {
+        // Instanciar una bala en el punto de disparo
+        GameObject bullet = Instantiate(bulletPrefab, firePoint.position, Quaternion.identity);
+
+        // Obtener el componente Rigidbody de la bala
+        Rigidbody bulletRB = bullet.GetComponent<Rigidbody>();
+
+        // Aplicar velocidad a la bala en dirección al jugador
+        bulletRB.velocity = direction * bulletSpeed;
     }
 }

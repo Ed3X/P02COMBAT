@@ -1,6 +1,6 @@
 using UnityEngine;
 
-public class PlayerRespawn : MonoBehaviour
+public class SpawnPlayer : MonoBehaviour
 {
     public Transform respawnPoint;
     private Health playerHealth; // Suponiendo que tienes un script para el control de la salud del jugador
