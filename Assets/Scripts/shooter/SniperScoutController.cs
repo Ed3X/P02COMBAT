@@ -11,6 +11,9 @@ public class SniperScopeController : MonoBehaviour
     public RawImage aimDefault;
     private float originalFOV = 45f;
     private float zoomedFOV = 20f;
+    private float secondZoomedFOV = 10f; // Nuevo FOV para el segundo zoom
+    private bool isZoomed = false; // Flag para controlar si se ha hecho zoom o no
+    private bool isSecondZoom = false; // Flag para controlar el segundo zoom
 
     void Start()
     {
@@ -23,22 +26,36 @@ public class SniperScopeController : MonoBehaviour
         // Si se hace clic derecho, cambia la visibilidad del SniperScope
         if (Input.GetMouseButtonDown(1))
         {
-            bool scopeActive = !sniperScope.activeSelf;
-            sniperScope.SetActive(scopeActive);
-
-            // Si el scope está activo, oculta el GameObject "awp", de lo contrario, muéstralo
-            awp.SetActive(!scopeActive);
-
-            // Cambia el campo de visión de la cámara
-            if (playerCamera != null)
+            if (!isZoomed)
             {
-                playerCamera.fieldOfView = scopeActive ? zoomedFOV : originalFOV;
+                // Primer zoom
+                isZoomed = true;
+                playerCamera.fieldOfView = zoomedFOV;
+            }
+            else if (!isSecondZoom)
+            {
+                // Segundo zoom
+                isSecondZoom = true;
+                playerCamera.fieldOfView = secondZoomedFOV;
+            }
+            else
+            {
+                // Si ya se hizo el segundo zoom, desactiva el zoom y restaura el FOV original
+                isZoomed = false;
+                isSecondZoom = false;
+                playerCamera.fieldOfView = originalFOV;
             }
 
-            // Oculta o muestra el Raw Image "AimDefault" según el estado del scope
+            // Cambia la visibilidad del SniperScope
+            sniperScope.SetActive(isZoomed || isSecondZoom);
+
+            // Oculta o muestra el GameObject "awp" según el estado del zoom
+            awp.SetActive(!(isZoomed || isSecondZoom));
+
+            // Oculta o muestra el Raw Image "AimDefault" según el estado del zoom
             if (aimDefault != null)
             {
-                aimDefault.enabled = !scopeActive;
+                aimDefault.enabled = !(isZoomed || isSecondZoom);
             }
         }
     }
