@@ -16,8 +16,8 @@ public class EnemyMove : MonoBehaviour
 
     // Variables para el disparo
     public float shootRate = 1f; // Frecuencia de disparo en segundos
-    private float nextShootTime = 1f; // Momento en el que se podr· disparar nuevamente
-    public float shootRange = 10f; // Rango m·ximo de disparo
+    private float nextShootTime = 1f; // Momento en el que se podr√° disparar nuevamente
+    public float shootRange = 10f; // Rango m√°ximo de disparo
     public GameObject bulletPrefab; // Prefab de la bala
     public Transform firePoint; // Punto de origen del disparo
     public float bulletSpeed = 10f; // Velocidad de la bala
@@ -33,10 +33,13 @@ public class EnemyMove : MonoBehaviour
 
     void Update()
     {
-        Vector3 targetPosition = target.transform.position + Vector3.up * 0.8f; // Ajustar la altura del objetivo
+        Vector3 targetPosition = target.transform.position + Vector3.up * 1f; // Ajustar la altura del objetivo
         Vector3 direction = (targetPosition - firePoint.position).normalized;
 
-        // Si el jugador est· dentro del rango de visiÛn
+        // Dibujar la l√≠nea del raycast en la direcci√≥n del disparo (siempre visible)
+        Debug.DrawRay(firePoint.position, direction * shootRange, Color.red);
+
+        // Si el jugador est√° dentro del rango de visi√≥n
         if (Vector3.Distance(transform.position, target.transform.position) < radio_vision)
         {
             // Detener la patrulla
@@ -48,7 +51,7 @@ public class EnemyMove : MonoBehaviour
             Quaternion rotation = Quaternion.LookRotation(lookPos);
             transform.rotation = Quaternion.RotateTowards(transform.rotation, rotation, 200f * Time.deltaTime);
 
-            // Si el jugador est· dentro del rango de ataque
+            // Si el jugador est√° dentro del rango de ataque
             if (Vector3.Distance(transform.position, target.transform.position) < distancia_ataque)
             {
                 // Disparar al jugador
@@ -57,8 +60,8 @@ public class EnemyMove : MonoBehaviour
                 ani.SetBool("walk", false);
                 if (Time.time > nextShootTime)
                 {
-                    Shoot(direction);
-                    nextShootTime = Time.time + 2f / shootRate; // Calculamos el prÛximo momento de disparo
+                    Shoot(); // Pasar la direcci√≥n al m√©todo Shoot
+                    nextShootTime = Time.time + 2f / shootRate; // Calculamos el pr√≥ximo momento de disparo
                 }
             }
             else
@@ -73,14 +76,14 @@ public class EnemyMove : MonoBehaviour
         }
         else
         {
-            // Si el jugador est· fuera del rango de visiÛn, continuar patrullando
+            // Si el jugador est√° fuera del rango de visi√≥n, continuar patrullando
             isPatrolling = true;
             agent.speed = velocidad_patrulla;
         }
 
         if (isPatrolling)
         {
-            // Si est· patrullando, continuar con la patrulla
+            // Si est√° patrullando, continuar con la patrulla
             ani.SetBool("walk", true);
             ani.SetBool("run", false);
             ani.SetBool("attack", false);
@@ -108,15 +111,34 @@ public class EnemyMove : MonoBehaviour
         agent.SetDestination(destination);
     }
 
-    private void Shoot(Vector3 direction)
+    private void Shoot()
     {
-        // Instanciar una bala en el punto de disparo
-        GameObject bullet = Instantiate(bulletPrefab, firePoint.position, Quaternion.identity);
+        Vector3 targetPosition = target.transform.position + Vector3.up * 0.8f; // Ajustar la altura del objetivo
+        Vector3 direction = (targetPosition - firePoint.position).normalized;
 
-        // Obtener el componente Rigidbody de la bala
-        Rigidbody bulletRB = bullet.GetComponent<Rigidbody>();
+        // Crear un raycast para detectar al jugador
+        RaycastHit hit;
+        if (Physics.Raycast(firePoint.position, direction, out hit, shootRange))
+        {
+            Debug.Log("Colision");
+            // Comprobar si el objeto golpeado es el jugador
+            if (hit.transform.CompareTag("Player"))
+            {
+                Debug.Log("Colision1");
+                // Instanciar una bala en el punto de disparo
+                GameObject bullet = Instantiate(bulletPrefab, firePoint.position, Quaternion.identity);
 
-        // Aplicar velocidad a la bala en direcciÛn al jugador
-        bulletRB.velocity = direction * bulletSpeed;
+                // Calcular la rotaci√≥n de la bala hacia el jugador
+                Quaternion rotation = Quaternion.LookRotation(targetPosition - bullet.transform.position);
+                bullet.transform.rotation = rotation;
+
+                // Obtener el componente Rigidbody de la bala
+                Rigidbody bulletRB = bullet.GetComponent<Rigidbody>();
+
+                // Aplicar velocidad a la bala en direcci√≥n al jugador
+                bulletRB.velocity = direction * bulletSpeed;
+            }
+        }
     }
+
 }
